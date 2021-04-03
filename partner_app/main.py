@@ -32,3 +32,15 @@ async def create_partner(partner: Partner):
     partners.insert_one(dict(partner))
 
     return partner
+
+
+@app.get("/api/v1/partners/{partner_id}", status_code=200)
+async def load_partner(partner_id: str):
+    """Handles load partner endpoint."""
+    partner = partners.find_one({"id": partner_id})
+
+    if partner is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "partner not found")
+
+    del partner['_id']
+    return partner
