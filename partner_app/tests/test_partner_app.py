@@ -3,21 +3,22 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from partner_app import main
+from .test_database import BaseDB
 
 
 client = TestClient(main.app)
 
 
-class TestPartnerCreation:
+class TestPartnerCreation(BaseDB):
     partners_endpoint = "/api/v1/partners"
 
     def setup_class(self):
+        super().setup_class(self)
         with open("single_reg.json", "r") as f:
             self.partner = json.load(f)
-        main.partners.drop()
 
     def teardown_class(self):
-        main.partners.drop()
+        super().teardown_class(self)
 
     def test_create_partner_successful(self):
         """Successful partner creation."""
@@ -66,17 +67,17 @@ class TestPartnerCreation:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-class TestPartnerLoad:
+class TestPartnerLoad(BaseDB):
     partners_endpoint = "/api/v1/partners/"
 
     def setup_class(self):
+        super().setup_class(self)
         with open("pdvs.json", "r") as f:
             self.partner = json.load(f)
-        main.partners.drop()
-        main.partners.insert_many(self.partner['pdvs'][:3])
+        self.insert_many(self, self.partner['pdvs'][:3])
 
     def teardown_class(self):
-        main.partners.drop()
+        super().teardown_class(self)
 
     def test_load_partner(self):
         """When the partner id exists everything goes fine."""
@@ -89,17 +90,17 @@ class TestPartnerLoad:
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-class TestPartnerSearch:
+class TestPartnerSearch(BaseDB):
     partners_endpoint = "/api/v1/partners?long={}&lat={}"
 
     def setup_class(self):
+        super().setup_class(self)
         with open("pdvs.json", "r") as f:
             self.partner = json.load(f)
-        main.partners.drop()
-        main.partners.insert_many(self.partner['pdvs'])
+        self.insert_many(self, self.partner['pdvs'])
 
     def teardown_class(self):
-        main.partners.drop()
+        super().teardown_class(self)
 
     def test_search_partner_find_invalid_coordinates(self):
         """An invalid coordinate is not accepted."""
