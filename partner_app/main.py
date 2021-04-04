@@ -1,5 +1,7 @@
+import haversine as hs
 from fastapi import FastAPI, HTTPException, status
 from pymongo import MongoClient
+from pymongo import errors
 
 from .models import Partner
 
@@ -30,7 +32,6 @@ async def create_partner(partner: Partner):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "'document' already exists")
 
     partners.insert_one(dict(partner))
-
     return partner
 
 
@@ -44,3 +45,32 @@ async def load_partner(partner_id: str):
 
     del partner['_id']
     return partner
+
+
+@app.get("/api/v1/partners", status_code=200)
+async def search_partner(long: float, lat: float):
+    """Handles search partner endpoint."""
+    try:
+        near_partners = list(partners.find({
+            'coverageArea': {
+                '$geoIntersects': {
+                    '$geometry' : {
+                        'type': 'Point',
+                        'coordinates': [long, lat]
+                    }
+                }
+            }}))
+    except errors.OperationFailure as ex:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, ex.details['errmsg'])
+
+    if near_partners:
+        nearest = {'partner': None, 'distance': 9999}
+        for partner in near_partners:
+            distance = hs.haversine((long, lat), partner['address']['coordinates'])
+            if distance < nearest['distance']:
+                nearest['partner'] = partner
+                nearest['distance'] = distance
+        del nearest['partner']['_id']
+        return nearest['partner']
+
+    raise HTTPException(status.HTTP_404_NOT_FOUND, "partner not found")

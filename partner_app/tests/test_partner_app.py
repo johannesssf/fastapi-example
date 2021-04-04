@@ -87,3 +87,50 @@ class TestPartnerLoad:
         """When a partner does not exist a proper code is returned."""
         response = client.get(self.partners_endpoint + "999")
         assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+class TestPartnerSearch:
+    partners_endpoint = "/api/v1/partners?long={}&lat={}"
+
+    def setup_class(self):
+        with open("pdvs.json", "r") as f:
+            self.partner = json.load(f)
+        main.partners.drop()
+        main.partners.insert_many(self.partner['pdvs'])
+
+    def teardown_class(self):
+        main.partners.drop()
+
+    def test_search_partner_find_invalid_coordinates(self):
+        """An invalid coordinate is not accepted."""
+        long_lat = (-181.3073990, -91.9964813)
+
+        response = client.get(self.partners_endpoint.format(*long_lat))
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_search_partner_find_one(self):
+        """A coordinate with a single result."""
+        # Coordnate within partner id=1 coverage area
+        long_lat = (-43.3073990, -22.9964813)
+
+        response = client.get(self.partners_endpoint.format(*long_lat))
+        assert response.status_code == status.HTTP_200_OK
+
+        partner_found = json.loads(response.content)
+        assert partner_found['id'] == '1'
+
+    def test_search_partner_find_none(self):
+        # Coordnate without all partners coverage area
+        long_lat = (-70.3540372, -8.1750448)
+
+        response = client.get(self.partners_endpoint.format(*long_lat))
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_search_partner_find_many(self):
+        # With a coordinate within the coverage areas of three partners, we get
+        #  the nearest based on its address. (id=29)
+        long_lat = (-46.6990754, -23.6206199)
+
+        response = client.get(self.partners_endpoint.format(*long_lat))
+        partner_found = json.loads(response.content)
+        assert partner_found['id'] == '29'
