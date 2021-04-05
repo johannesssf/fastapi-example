@@ -24,7 +24,7 @@ class MongoDB:
 
         return self._client[self._db_name]
 
-    def insert(self, collection: str, data: dict) -> bool:
+    def insert(self, collection: str, data: dict) -> Dict:
         """Insert data into collection.
 
         Args:
@@ -68,10 +68,6 @@ class MongoDB:
         return list(db[collection].find(query, {"_id": 0}))
 
 
-class PartnerNotFoundException(Exception):
-    pass
-
-
 class PartnerDB:
     """Wrapps MongoDB to handle the application business logic."""
     def __init__(self, db_name: str, collection: str):
@@ -107,5 +103,3 @@ class PartnerDB:
                     nearest["distance"] = distance
 
             return nearest["partner"]
-
-        # raise PartnerNotFoundException

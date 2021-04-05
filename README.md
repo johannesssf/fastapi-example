@@ -11,14 +11,20 @@
 ## Run locally
 
 The steps bellow work for Linux/Windows environmets. But when running in Windows
-after installl the requirements you need to add to PATH the pytest and ivicorn
+after installl the requirements you need to add to PATH the pytest and uvicorn
 binaries.
+
+**Pre-requirements**
+* git
+* python 3.8
+* pip
+* docker
 
 1. Clone this repository and cd into it
     ```
     $ git clone https://github.com/johannesssf/ze-tech-test.git
     ```
-1. Install the project requirements (sugestion: user a virtual environment)
+1. Install the project requirements (sugestion: use virtual env)
     ```
     $ pip install -r requirements.txt
     ```
@@ -31,7 +37,7 @@ binaries.
     $ cd partner_app/tests
     $ pytest -sv
     ```
-1. Start the application from the project root
+1. Start the application from project root
     ```
     $ uvicorn partner_app.main:app
     ```
@@ -39,3 +45,9 @@ binaries.
     ```
     http://localhost:8000/redoc
     ```
+
+### Points of improvement
+
+* Create a generic way to get the database connection
+* The tests should have a separated database
+* Improvements on database use, like authentication and access

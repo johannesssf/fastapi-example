@@ -1,9 +1,8 @@
 import json
-import pytest
 
 from pymongo import MongoClient
 
-from ..database import MongoDB, PartnerDB, PartnerNotFoundException
+from ..database import MongoDB, PartnerDB
 
 
 DB_HOST = "mongodb://localhost:27017"

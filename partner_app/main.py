@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, status
 from pymongo import errors
 
-from .database import PartnerDB, PartnerNotFoundException
+from .database import PartnerDB
 from .models import Partner
 
 
