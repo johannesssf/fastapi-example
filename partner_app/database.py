@@ -73,6 +73,7 @@ class PartnerNotFoundException(Exception):
 
 
 class PartnerDB:
+    """Wrapps MongoDB to handle the application business logic."""
     def __init__(self, db_name: str, collection: str):
         self._db = MongoDB(db_name)
         self._collection = collection
@@ -107,4 +108,4 @@ class PartnerDB:
 
             return nearest["partner"]
 
-        raise PartnerNotFoundException
+        # raise PartnerNotFoundException

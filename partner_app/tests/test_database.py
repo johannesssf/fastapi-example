@@ -1,33 +1,25 @@
 import json
+import pytest
 
 from pymongo import MongoClient
 
-from ..database import MongoDB, PartnerDB
+from ..database import MongoDB, PartnerDB, PartnerNotFoundException
 
 
-class BaseDB:
-    db_host = "mongodb://localhost:27017"
-    db_name = "mariodelivery_test"
-    collection = "partners"
+DB_HOST = "mongodb://localhost:27017"
+DB_NAME = "mariodelivery"
+COLLECTION = "partners"
+DB = MongoClient(DB_HOST)[DB_NAME]
 
-    def insert_many(self, data):
-        self._client[self.db_name][self.collection].insert_many(data)
+
+class TestDatabase:
 
     def setup_class(self):
-        self._client = MongoClient(self.db_host)
-        self._client[self.db_name][self.collection].drop()
+        DB[COLLECTION].drop()
 
-    def teardown_class(self):
-        self._client[self.db_name][self.collection].drop()
-
-
-class TestDatabase(BaseDB):
-    def setup_class(self):
-        super().setup_class(self)
-
-        self.db = MongoDB(self.db_name)
+        self.db = MongoDB(DB_NAME)
         self.db.insert(
-            self.collection,
+            COLLECTION,
             {
                 "id": "1",
                 "tradingName": "Warm Beverages",
@@ -36,14 +28,17 @@ class TestDatabase(BaseDB):
             }
         )
 
+    def teardown_class(self):
+        DB[COLLECTION].drop()
+
     def test_find_existent_document(self):
         """A document is returned when the id exists."""
-        doc = self.db.load(self.collection, {"id": "1"})
+        doc = self.db.load(COLLECTION, {"id": "1"})
         assert doc is not None
 
     def test_find_none_existent_document(self):
         """No document is returned when the id does not exist."""
-        doc = self.db.load(self.collection, {"id": "1234"})
+        doc = self.db.load(COLLECTION, {"id": "1234"})
         assert doc is None
 
     def test_insert_data(self):
@@ -54,7 +49,7 @@ class TestDatabase(BaseDB):
             "ownerName": "John Doe",
             "document": "25845675391",
         }
-        assert self.db.insert(self.collection, data)
+        assert self.db.insert(COLLECTION, data)
 
     def test_search_data(self):
         """Documents are returned with the matching filter."""
@@ -64,23 +59,26 @@ class TestDatabase(BaseDB):
             "ownerName": "Jane Doe",
             "document": "32165498791",
         }
-        self.db.insert(self.collection, data)
+        self.db.insert(COLLECTION, data)
 
-        reg = self.db.search(self.collection, {"id": "3"})
+        reg = self.db.search(COLLECTION, {"id": "3"})
         assert reg[0]['id'] == "3"
 
 
-class TestPartnerDB(BaseDB):
-    def setup_class(self):
-        super().setup_class(self)
+class TestPartnerDB:
 
-        self.db = PartnerDB(self.db_name, self.collection)
+    def setup_class(self):
+        DB[COLLECTION].drop()
+        self.db = PartnerDB(DB_NAME, COLLECTION)
 
         with open('pdvs.json') as f:
             self.pdvs = json.load(f)['pdvs'][:5]
 
         for pdv in self.pdvs:
             self.db.insert(pdv)
+
+    def teardown_class(self):
+        DB[COLLECTION].drop()
 
     def test_find_by_id(self):
         """When id exists we can find it."""
@@ -98,6 +96,6 @@ class TestPartnerDB(BaseDB):
         assert partner
 
     def test_search_nearest_none(self):
-        """When a point is not in a coverage area partner is found."""
+        """When a point is not in a coverage area we get None."""
         partner = self.db.search_nearest(-46.64905, -23.55543)
-        assert not partner
+        assert partner is None

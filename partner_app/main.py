@@ -6,7 +6,7 @@ from .models import Partner
 
 
 app = FastAPI()
-DB = PartnerDB("mariodelivery_test", "partners")
+DB = PartnerDB("mariodelivery", "partners")
 
 
 @app.post("/api/v1/partners", status_code=status.HTTP_201_CREATED)
@@ -32,8 +32,7 @@ async def create_partner(partner: Partner):
 async def load_partner(partner_id: str):
     """Handles load partner endpoint."""
     partner = DB.find_by_id(partner_id)
-
-    if partner is None:
+    if not partner:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "partner not found")
 
     return partner
@@ -43,10 +42,10 @@ async def load_partner(partner_id: str):
 async def search_partner(long: float, lat: float):
     """Handles search partner endpoint."""
     try:
-        nearest = DB.search_nearest(long, lat)
-        if nearest:
-            return nearest
+        partner = DB.search_nearest(long, lat)
+        if partner:
+            return partner
     except errors.OperationFailure as ex:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, ex.details['errmsg'])
-    except PartnerNotFoundException:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "partner not found")
+
+    raise HTTPException(status.HTTP_404_NOT_FOUND, "partner not found")

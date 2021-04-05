@@ -1,0 +1,7 @@
+geojson==2.5.0
+fastapi==0.63.0
+haversine==2.3.0
+pymongo==3.11.3
+uvicorn==0.13.4
+requests==2.25.1
+pytest==6.2.2

@@ -7,3 +7,35 @@
 * Search partner
 
 # HOW TO
+
+## Run locally
+
+The steps bellow work for Linux/Windows environmets. But when running in Windows
+after installl the requirements you need to add to PATH the pytest and ivicorn
+binaries.
+
+1. Clone this repository and cd into it
+    ```
+    $ git clone https://github.com/johannesssf/ze-tech-test.git
+    ```
+1. Install the project requirements (sugestion: user a virtual environment)
+    ```
+    $ pip install -r requirements.txt
+    ```
+1. Start a mongo Docker container or a local server
+    ```
+    $ docker run -d --rm -p 27017:27017 mongo
+    ```
+1. (Optional) run the tests
+    ```
+    $ cd partner_app/tests
+    $ pytest -sv
+    ```
+1. Start the application from the project root
+    ```
+    $ uvicorn partner_app.main:app
+    ```
+1. The auto-generated documentation can be found at
+    ```
+    http://localhost:8000/redoc
+    ```
