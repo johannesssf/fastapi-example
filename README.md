@@ -1,4 +1,4 @@
-# Zé Delivery Tech Test
+# A simple example using FastAPI
 
 # Functionalities
 
@@ -22,7 +22,7 @@ binaries.
 
 1. Clone this repository and cd into it
     ```
-    $ git clone https://github.com/johannesssf/ze-tech-test.git
+    $ git clone https://github.com/johannesssf/fastapi-example.git
     ```
 1. Install the project requirements (sugestion: use virtual env)
     ```
